@@ -3,21 +3,36 @@ import { getNonce } from './util';
 
 /**
  * Provider for cat scratch editors.
- * 
+ *
  * Cat scratch editors are used for `.cscratch` files, which are just json files.
  * To get started, run this extension and open an empty `.cscratch` file in VS Code.
- * 
+ *
  * This provider demonstrates:
- * 
+ *
  * - Setting up the initial webview for a custom editor.
  * - Loading scripts and styles in a custom editor.
  * - Synchronizing changes between a text document and a custom editor.
  */
 export class CatScratchEditorProvider implements vscode.CustomTextEditorProvider {
+	private static newCatScratchFileId = 1;
 
 	public static register(context: vscode.ExtensionContext): vscode.Disposable {
 		const provider = new CatScratchEditorProvider(context);
 		const providerRegistration = vscode.window.registerCustomEditorProvider(CatScratchEditorProvider.viewType, provider);
+
+		vscode.commands.registerCommand('catCustoms.catScratch.new', () => {
+			const workspaceFolders = vscode.workspace.workspaceFolders;
+			if (!workspaceFolders) {
+				vscode.window.showErrorMessage("Creating new Paw Draw files currently requires opening a workspace");
+				return;
+			}
+
+			const uri = vscode.Uri.joinPath(workspaceFolders[0].uri, `new-${CatScratchEditorProvider.newCatScratchFileId++}.catscratch.yaml`)
+				.with({ scheme: 'untitled' });
+
+			vscode.commands.executeCommand('vscode.openWith', uri, CatScratchEditorProvider.viewType);
+		});
+
 		return providerRegistration;
 	}
 
@@ -31,8 +46,8 @@ export class CatScratchEditorProvider implements vscode.CustomTextEditorProvider
 
 	/**
 	 * Called when our custom editor is opened.
-	 * 
-	 * 
+	 *
+	 *
 	 */
 	public async resolveCustomTextEditor(
 		document: vscode.TextDocument,
@@ -56,7 +71,7 @@ export class CatScratchEditorProvider implements vscode.CustomTextEditorProvider
 		//
 		// The text document acts as our model, so we have to sync change in the document to our
 		// editor and sync changes in the editor back to the document.
-		// 
+		//
 		// Remember that a single text document can also be shared between multiple custom
 		// editors (this happens for example when you split a custom editor)
 
@@ -133,7 +148,7 @@ export class CatScratchEditorProvider implements vscode.CustomTextEditorProvider
 						<button>Scratch!</button>
 					</div>
 				</div>
-				
+
 				<script nonce="${nonce}" src="${scriptUri}"></script>
 			</body>
 			</html>`;

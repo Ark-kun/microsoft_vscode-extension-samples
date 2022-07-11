@@ -1,3 +1,4 @@
+import { TextDecoder, TextEncoder } from 'util';
 import * as vscode from 'vscode';
 import { Disposable, disposeAll } from './dispose';
 import { getNonce } from './util';
@@ -134,7 +135,8 @@ class PawDrawDocument extends Disposable implements vscode.CustomDocument {
 	 * Called by VS Code when the user saves the document to a new location.
 	 */
 	async saveAs(targetResource: vscode.Uri, cancellation: vscode.CancellationToken): Promise<void> {
-		const fileData = await this._delegate.getFileData();
+		//const fileData = await this._delegate.getFileData();
+		const fileData = new TextEncoder().encode("foo: bar");
 		if (cancellation.isCancellationRequested) {
 			return;
 		}
@@ -202,7 +204,7 @@ export class PawDrawEditorProvider implements vscode.CustomEditorProvider<PawDra
 				return;
 			}
 
-			const uri = vscode.Uri.joinPath(workspaceFolders[0].uri, `new-${PawDrawEditorProvider.newPawDrawFileId++}.pawdraw`)
+			const uri = vscode.Uri.joinPath(workspaceFolders[0].uri, `new-${PawDrawEditorProvider.newPawDrawFileId++}.pawdraw.yaml`)
 				.with({ scheme: 'untitled' });
 
 			vscode.commands.executeCommand('vscode.openWith', uri, PawDrawEditorProvider.viewType);
